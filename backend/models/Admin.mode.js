@@ -15,7 +15,8 @@ const AdminSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+    
 });
 
 //Pre-save hook to hash the password

@@ -4,7 +4,7 @@ import { verifyToken } from '../middlewares/Admin.midlewares.js';
 
 const router = express.Router();
 
-router.post('/newcollege', addNewCollege);
+router.post('/newcollege', verifyToken, addNewCollege);
 router.get('/getallcolleges', getAllCollege)
 router.get('/getcollegebyid/:collegeId', getCollegeById);
 router.put('/updatecollege/:collegeId', verifyToken, updateCollege);
