@@ -1,5 +1,9 @@
+import mongoose from "mongoose";
 import College from "../models/College.model.js";
 import Course from "../models/Course.model.js";
+import { COURSES, STREAMS } from "../utils/enums.js";
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const AddCourse = async (req, res) => {
     try {
@@ -7,6 +11,16 @@ const AddCourse = async (req, res) => {
         const collegeExists = await College.findById(college);
         if(!collegeExists){
             return res.status(400).json({error: 'College not found'})
+        }
+
+        //Validate if the stream name is valid
+        if(!Object.values(STREAMS).includes(stream)){
+            return res.status(400).json({error: 'Invalid stream name'})
+        }
+
+        //Validate if the stream name matches the course name
+        if(!COURSES[stream] || !COURSES[stream].includes(courseName)){
+            return res.status(400).json({error: 'Stream name does not match the course name'})
         }
 
         const newCourse = new Course({
@@ -18,7 +32,13 @@ const AddCourse = async (req, res) => {
             college
         });
 
+        // console.log(newCourse.stream);
+
+
         await newCourse.save();
+        collegeExists.courses.push(newCourse._id)
+        await collegeExists.save();
+
         res.status(201).json(newCourse)
     } catch (error) {
         console.error('Error in addCourse controller', error);
@@ -26,6 +46,111 @@ const AddCourse = async (req, res) => {
     }
 };
 
+const getAllCourses = async (req, res) => {
+    try {
+        const courses = await Course.find().populate('college', 'collegeName location');
+        res.status(200).json(courses);
+    } catch (error) {
+        console.error('Error in getAllCourses controller', error);
+        res.status(500).json({error: error.message})
+    }
+};
+
+const getCourseById = async (req, res) => {
+    try {
+        const {courseId} = req.params;
+        
+        if(!isValidObjectId(courseId)){
+            return res.status(400).json({error: 'Invalid course ID'})
+        };
+
+        const course = await Course.findById(courseId).populate('college', 'collegeName');
+        if(!course){
+            return res.status(404).json({error: 'Course not found'})
+        };
+
+        res.status(200).json(course)
+    } catch (error) {
+        console.error('Error in getCourseById controller', error);
+        res.status(500).json({error: error.message})
+    }
+}
+
+const updateCourse = async (req, res) => {
+    try {
+        const {courseId} = req.params;
+        const { courseName, stream, duration, fees, eligibility, collegeId } = req.body;
+
+        if(!isValidObjectId(courseId)){
+            return res.status(400).json({error: 'Invalid course ID'})
+        };
+
+        const course = await Course.findById(courseId);
+        if(!course){
+            return res.status(404).json({error: 'Invalid course ID'})
+        }
+
+        if(collegeId && !isValidObjectId(collegeId)){
+            return res.status(400).json({error: 'Invalid college ID'});
+        };
+
+        if(collegeId){
+            const collegeExists = await College.findById(collegeId);
+            if(!collegeExists){
+                return res.status(400).json({error: 'College not found'})
+            };
+            course.college = collegeId
+        };
+
+        if(!Object.values(STREAMS).includes(stream)){
+            return res.status(400).json({error: 'Stream is not valid'})
+        }
+
+        if(!COURSES[stream] || !COURSES[stream].includes(courseName)){
+            return res.status(400).json({error: 'Stream name does not match the course name'})
+        }
+
+        course.courseName = courseName || course.courseName;
+        course.stream = stream || course.stream;
+        course.duration = duration || course.duration;
+        course.fees = fees || course.fees;
+        course.eligibility = eligibility || course.eligibility;
+
+        await course.save();
+        res.status(200).json({message: 'Course updated successfully', course})
+    } catch (error) {
+        console.error('Error in updateCourse controller', error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+const deleteCourse = async (req, res) => {
+    try {
+        const {courseId} = req.params;
+        const course = await Course.findById(courseId);
+        
+        if(!course){
+            return res.status(404).json({error: 'Course not found'});
+        };
+        
+        await College.findByIdAndUpdate(
+            course.college,
+            { $pull: { courses: courseId } }, {new: true}
+        );
+
+        await course.deleteOne({_id: courseId});
+
+        res.status(200).json({message: 'Course deleted successfully'})
+    } catch (error) {
+        console.error('Error in deleteCourse controller', error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
 export {
-    AddCourse
+    AddCourse,
+    getAllCourses,
+    getCourseById,
+    updateCourse,
+    deleteCourse
 }

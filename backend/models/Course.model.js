@@ -5,12 +5,12 @@ const CourseSchema = new mongoose.Schema({
     courseName: {
         type: String,
         required: true,
-        validate: {
-            validator: function(courseName){
-                return COURSES[this.stream].includes(courseName);
-            },
-            message: props => `${props.value} is not a valid course for the selected stream`
-        }
+        // validate: {
+        //     validator: function(courseName){
+        //         return COURSES[this.stream].includes(courseName);
+        //     },
+        //     message: props => `${props.value} is not a valid course for the selected stream`
+        // }
     },
     stream: {
         type: String,
