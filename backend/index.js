@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/Database.config.js';
 import adminRoutes from './routes/Admin.routes.js';
 import collegeRoutes from './routes/College.routes.js';
+import courseRoutes from './routes/Course.routes.js';
 
 
 
@@ -23,7 +24,8 @@ connectDB();
 //Post routes
 app.use('/api', adminRoutes)
 
-app.use('/api/college', collegeRoutes)
+app.use('/api/college', collegeRoutes);
+app.use('/api/courses', courseRoutes)
 
 app.listen(PORT, () => {
     console.log(`port is running on ${PORT}`);

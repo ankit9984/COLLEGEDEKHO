@@ -19,11 +19,11 @@ const CourseSchema = new mongoose.Schema({
     },
     duration: {
         type: String,
-        required: true
+        // required: true
     },
     fees: {
         type: Number,
-        required: true
+        // required: true
     },
     eligibility: {
         type: String,
@@ -36,4 +36,6 @@ const CourseSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-export default mongoose.model('Course', CourseSchema);
+const Course = mongoose.model('Course', CourseSchema);
+
+export default Course;

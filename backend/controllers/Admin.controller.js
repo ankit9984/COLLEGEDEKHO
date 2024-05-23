@@ -1,5 +1,6 @@
 import { generateToken } from "../middlewares/Admin.midlewares.js";
 import Admin from "../models/Admin.mode.js";
+import bcrypt from 'bcryptjs';
 
 // Create a new admin
 export const createAdmin = async (req, res) => {
@@ -30,6 +31,39 @@ export const createAdmin = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
+
+export const loginAdmin = async (req, res) => {
+    try {
+        const {username, password} = req.body;
+        const admin = await Admin.findOne({username});
+        if(!admin){
+            return res.status(400).json({error: 'Invalid credentials'})
+        };
+
+        const isValidPassword = await bcrypt.compare(password, admin.password);
+        if(!isValidPassword){
+            return res.status(400).json({error: 'Invalide password'})
+        }
+
+        const payload = {id: admin._id};
+        generateToken(res, payload);
+
+        res.status(201).json({message: 'Login successfully', admin})
+    } catch (error) {
+        console.log('error in login', error);
+        res.status(400).json({error: error.message})
+    }
+}
+
+export const logoutAdmin = (req, res) => {
+    try {
+        // Clear the token cookie
+        res.clearCookie('token');
+        res.status(200).json({ message: 'Logout successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
 
 // Get all admins
 export const getAdmins = async (req, res) => {

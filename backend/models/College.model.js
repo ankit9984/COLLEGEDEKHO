@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { STREAMS } from '../utils/enums.js';
 
 const collegeSchema = new mongoose.Schema({
     collegeName: {
@@ -10,13 +11,20 @@ const collegeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    location: {
+        type: String,
+        required: true
+    },
+    streams: {
+        type: [String],
+        enum: Object.values(STREAMS),
+        required: true
+    },
     courses: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
     }],
-    
-}, {timestamps: true});
-
+}, { timestamps: true });
 
 const College = mongoose.model('College', collegeSchema);
 
