@@ -24,7 +24,7 @@ const isCourseValid = (stream, courseName) => {
 
 const AddCourse = async (req, res) => {
     try {
-        const { courseName, stream, duration, fees, eligibility, college } = req.body;
+        const { courseName, stream, duration, fees, eligibility, college, seatIntake } = req.body;
         const collegeExists = await College.findById(college);
         if (!collegeExists) {
             return res.status(400).json({ error: 'College not found' });
@@ -46,7 +46,8 @@ const AddCourse = async (req, res) => {
             duration,
             fees,
             eligibility,
-            college
+            college,
+            seatIntake
         });
 
         await newCourse.save();
@@ -62,11 +63,23 @@ const AddCourse = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
     try {
-        const courses = await Course.find().populate('college', 'collegeName location');
+        // Efficient population with selected fields for both college and miniCourse
+        const courses = await Course.find()
+            .populate({
+                path: 'college',
+                select: 'collegeName location'
+            })
+            .populate({
+                path: 'miniCourse',
+                select: 'miniCourseName seatIntake fees'
+            })
+            .lean()
+            .exec();
+
         res.status(200).json(courses);
     } catch (error) {
         console.error('Error in getAllCourses controller', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'An error occurred while fetching courses' });
     }
 };
 

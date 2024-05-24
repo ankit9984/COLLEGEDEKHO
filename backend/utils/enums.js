@@ -13,3 +13,8 @@ export const COURSES = {
     Arts: ['BA', 'MA'],               // Array of courses for Arts stream
     // Add more categories and courses as needed
 };
+
+export const MINI_COURSES = {
+    B_COM: ['Bachelor of Commerce (B.Com.)', 'B.Com. in Accounting and Finance', 'B.Com. in Digital Business'],
+    BBA: ['BBA in Marketing', 'BBA in Finance', 'BBA in HR'],
+}
